@@ -41,7 +41,7 @@ function attachCookie(res, token) {
   res.cookie("token", token, {
     httpOnly: true,               // not accessible via document.cookie
     secure: isProduction,         // HTTPS only in prod
-    sameSite: isProduction ? "strict" : "lax",
+    sameSite: isProduction ? "none" : "lax", // 'none' required for cross-site (Vercel -> Render)
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
   });
 }
@@ -50,7 +50,8 @@ function attachCookie(res, token) {
  * Clear the auth cookie (used on logout).
  */
 function clearCookie(res) {
-  res.clearCookie("token", { httpOnly: true, sameSite: "strict" });
+  const isProduction = process.env.NODE_ENV === "production";
+  res.clearCookie("token", { httpOnly: true, sameSite: isProduction ? "none" : "lax", secure: isProduction });
 }
 
 module.exports = { signToken, verifyToken, attachCookie, clearCookie };
